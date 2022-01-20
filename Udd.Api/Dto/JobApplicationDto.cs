@@ -1,12 +1,11 @@
-﻿using Nest;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Udd.Api.Models
+namespace Udd.Api.Dto
 {
-    public class JobApplicationIndexUnit
+    public class JobApplicationDto
     {
         public Guid Id { get; set; }
         public string ApplicantName { get; set; }
@@ -16,6 +15,6 @@ namespace Udd.Api.Models
         public string CvLetterContent { get; set; }
         public string CvFileName { get; set; }
         public string CvLetterFileName { get; set; }
-        public GeoLocation GeoLocation { get; set; }
+        
     }
 }

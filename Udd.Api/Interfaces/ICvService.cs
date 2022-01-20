@@ -10,11 +10,12 @@ namespace Udd.Api.Interfaces
     public interface ICvService
     {
 
-        Task<List<JobApplicationIndexUnit>> GetCvsByNameAndLastname(string name, string lastName);
-        Task<List<JobApplicationIndexUnit>> GetCvsByEducationLevel(int level);
-        Task<List<JobApplicationIndexUnit>> GetCvsByCvLetterContent(string content);
-        Task<List<JobApplicationIndexUnit>> GetCvsCombinedQuery(CombinedQueryDto query);
-        Task<List<JobApplicationIndexUnit>> GetAll();
+        Task<List<JobApplicationDto>> GetCvsByNameAndLastname(string name, string lastName);
+        Task<List<JobApplicationDto>> GetCvsByEducationLevel(int level);
+        Task<List<SearchResultWithHighlightsDto>> GetCvsByCvLetterContent(string content);
+        Task<List<JobApplicationDto>> GetCvsCombinedQuery(CombinedQueryDto query);
+        Task<List<JobApplicationDto>> GetAll();
+        Task<List<JobApplicationDto>> GetByLocation(string cityName, int radius);
         Task IndexTestDocs();
     }
 }

@@ -50,6 +50,13 @@ namespace Udd.Api.Controllers
 
         }
 
+        [HttpGet("location")]
+        public async Task<IActionResult> SearchByLocation([FromQuery][Required] string cityName, [FromQuery][Required] int radiusKm)
+        {
+            return Ok(await _cvService.GetByLocation(cityName, radiusKm));
+
+        }
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {

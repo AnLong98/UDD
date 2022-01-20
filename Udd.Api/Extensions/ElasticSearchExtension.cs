@@ -58,7 +58,9 @@ namespace Udd.Api.Extensions
                             .Name(n => n.CvLetterContent)
                                 .Analyzer("serbian"))
                         .Number(t => t
-                            .Name(n => n.ApplicantEducationlevel)  
+                            .Name(n => n.ApplicantEducationlevel))  
+                        .GeoPoint( t => t
+                            .Name(n => n.GeoLocation)
                     ))));
         }
     }
