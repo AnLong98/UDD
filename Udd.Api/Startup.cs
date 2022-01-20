@@ -23,6 +23,7 @@ namespace Udd.Api
 {
     public class Startup
     {
+        private readonly string _cors = "cors";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -50,6 +51,15 @@ namespace Udd.Api
                 mc.AddProfile(new UddMappingProfile());
             });
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: _cors, builder => {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+            });
+
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
         }
@@ -65,6 +75,7 @@ namespace Udd.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseCors(_cors);
 
             app.UseRouting();
 

@@ -62,10 +62,8 @@ namespace Udd.Api.Services
                                                                     .QueryString(m => m
                                                                         .Fields(f => f.Field(l => l.CvLetterContent))
                                                                         .Query(content)
-
                                                                     )
                                                                 )
-
                                                             )
                                                         ).Highlight(h => h
                                                             .Fields(f => f
