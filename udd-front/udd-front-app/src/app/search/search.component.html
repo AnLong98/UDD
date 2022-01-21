@@ -1,1 +1,113 @@
-<p>search works!</p>
+<div class="container-fluidm-1">
+        <div class="container rounded bg-white mt-5">
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>Search Job application repository</h3>
+                </div>
+            </div>
+            <form [formGroup]="searchForm">
+                <div class="row">
+
+                    <div class="col-md-10">
+                        <mat-form-field appearance="legacy" class="example-full-width">
+                        <mat-label>Education level</mat-label>
+                        <mat-select formControlName="edLevelControl">
+                                <mat-option value="1" >Elementary school</mat-option>
+                                <mat-option value="2">High school</mat-option>
+                                <mat-option value="3">BSc</mat-option>
+                                <mat-option value="4">MSc</mat-option>
+                                <mat-option value="5">PhD</mat-option>
+                        </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" (click)="searchByEducation()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by education
+                        </button>
+                    </div>
+
+                </div>
+                <div class="row">
+
+                    <div class="col-md-5">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Name</mat-label>
+                        <input matInput formControlName="nameControl" placeholder="name" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-5">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Last Name</mat-label>
+                        <input matInput formControlName="lastNameControl" placeholder="last name" >
+                        
+                        </mat-form-field>
+                    </div> 
+                    
+                        
+                    <div class="col-md-2">
+                        <button type="button" (click)="searchByName()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by Name
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-5">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>City name</mat-label>
+                        <input matInput formControlName="cityControl" placeholder="city" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-5">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Radius (KM)</mat-label>
+                        <input matInput formControlName="radiusControl" placeholder="radius" >
+                        
+                        </mat-form-field>
+                    </div> 
+                    
+                        
+                    <div class="col-md-2">
+                        <button type="button" (click)="searchByGeo()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by geolocation
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-10">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Cover letter content</mat-label>
+                        <input matInput formControlName="coverLetterControl" placeholder="city" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-2">
+                        <button type="button" (click)="searchByContent()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by content
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="button" (click)="searchByContent()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search combined
+                        </button>
+                    </div>
+                </div>
+            </form>
+                    
+        </div>
+        <app-document-card  *ngFor="let document of applications" [application]='document'></app-document-card>
+</div>

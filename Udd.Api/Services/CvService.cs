@@ -23,17 +23,27 @@ namespace Udd.Api.Services
             _cityService = cityService;
         }
 
-        public async Task<List<JobApplicationDto>> GetAll()
+        public async Task<List<SearchResultWithHighlightsDto>> GetAll()
         {
+            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
             var response = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
             s => s.Query(q =>
                        q.MatchAll()));
 
-            return _mapper.Map<List<JobApplicationDto>>(response.Documents.ToList());
+            foreach (var document in response.Documents)
+            {
+                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
+                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
+                results.Add(result);
+                result.SearchHighlights = new List<string>();
+            }
+
+            return results;
         }
 
-        public async Task<List<JobApplicationDto>> GetByLocation(string cityName, int radius)
+        public async Task<List<SearchResultWithHighlightsDto>> GetByLocation(string cityName, int radius)
         {
+            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
             CityDto city = _cityService.GetByName(cityName);
             if (city == null)
                 return null;
@@ -49,7 +59,15 @@ namespace Udd.Api.Services
                         .ValidationMethod(GeoValidationMethod.IgnoreMalformed)
                     )));
 
-            return _mapper.Map<List<JobApplicationDto>>(response.Documents.ToList());
+            foreach (var document in response.Documents)
+            {
+                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
+                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
+                results.Add(result);
+                result.SearchHighlights = new List<string>();
+            }
+
+            return results;
         }
 
         public async  Task<List<SearchResultWithHighlightsDto>> GetCvsByCvLetterContent(string content)
@@ -68,8 +86,8 @@ namespace Udd.Api.Services
                                                         ).Highlight(h => h
                                                             .Fields(f => f
                                                                 .Field(x => x.CvLetterContent)
-                                                                .PreTags("<em>")
-                                                                .PostTags("</em>")
+                                                                .PreTags("<em><b>")
+                                                                .PostTags("</b></em>")
                                                                 )));
 
             var highlightsInResponse = searchResponse.Hits.Select(x => x.Highlight);
@@ -102,18 +120,29 @@ namespace Udd.Api.Services
             return results;
         }
 
-        public async Task<List<JobApplicationDto>> GetCvsByEducationLevel(int level)
+        public async Task<List<SearchResultWithHighlightsDto>> GetCvsByEducationLevel(int level)
         {
+            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
             var response = await _elasticClient.SearchAsync<JobApplicationDto>(
                 s => s.Query(q =>
                                q.Term(x => x.ApplicantEducationlevel, level)));
-            return response.Documents.ToList();
+
+            foreach (var document in response.Documents)
+            {
+                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
+                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
+                results.Add(result);
+                result.SearchHighlights = new List<string>();
+            }
+
+            return results;
 
         }
 
-        public async Task<List<JobApplicationDto>> GetCvsByNameAndLastname(string name, string lastName)
+        public async Task<List<SearchResultWithHighlightsDto>> GetCvsByNameAndLastname(string name, string lastName)
         {
-            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationDto>(s => s
+            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
+            var response = await  _elasticClient.SearchAsync<JobApplicationDto>(s => s
                                                         .Query(q => q
                                                             .Bool(b => b
                                                                 .Should(mu => mu
@@ -131,10 +160,18 @@ namespace Udd.Api.Services
                                                         )
                                                     );
 
-            return searchResponse.Documents.ToList();
+            foreach (var document in response.Documents)
+            {
+                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
+                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
+                results.Add(result);
+                result.SearchHighlights = new List<string>();
+            }
+
+            return results;
         }
 
-        public async Task<List<JobApplicationDto>> GetCvsCombinedQuery(CombinedQueryDto query)
+        public async Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query)
         {
 
             /*var searchRequest = new SearchRequest<JobApplicationDto>
