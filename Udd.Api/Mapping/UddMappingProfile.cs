@@ -13,6 +13,7 @@ namespace Udd.Api.Mapping
         public UddMappingProfile()
         {
             CreateMap<JobApplicationDto, JobApplicationIndexUnit>().ReverseMap();
+            CreateMap<NewJobApplicationDto, JobApplicationIndexUnit>().ReverseMap();
             CreateMap<CityDto, City>().ReverseMap();
         }
     }

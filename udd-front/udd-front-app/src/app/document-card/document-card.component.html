@@ -2,6 +2,7 @@
     <div class="card-body pt-0">
       <p class="m-0">Name: &nbsp;{{application.jobApplication.applicantName}} </p>
       <p class="m-0">Last name: &nbsp; {{application.jobApplication.applicantLastname}} </p>
+      <p class="m-0">City: &nbsp; {{application.jobApplication.cityName}} </p>
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 1">Education: Elementary school</p> 
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 2">Education: High school</p> 
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 3">Education: BSc</p> 

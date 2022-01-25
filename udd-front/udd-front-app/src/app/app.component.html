@@ -3,6 +3,10 @@
     <div class="navbar-header">
       <div class="navbar-brand" href="#">Job application management</div>
     </div>
+      <ul class="nav navbar-nav">
+        <li><a [routerLink]="['/new']" class="navbar-brand "  > Add new</a></li>
+        <li><a [routerLink]="['']" class="navbar-brand  "  > Search</a></li>
+      </ul>
   </div>
 </nav>
 <router-outlet></router-outlet>

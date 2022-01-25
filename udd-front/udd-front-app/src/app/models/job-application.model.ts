@@ -7,5 +7,6 @@ export class JobApplication {
     cvLetterContent:string = "";
     cvFileName:string = "";
     cvLetterFileName:string = "";
+    cityName:string = "";
 
 }

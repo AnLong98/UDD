@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Udd.Api.Dto;
 using Udd.Api.Interfaces;
@@ -21,6 +25,50 @@ namespace Udd.Api.Services
             _elasticClient = elasticClient;
             _mapper = mapper;
             _cityService = cityService;
+        }
+
+        public async Task<bool> AddNewApplication(NewJobApplicationDto application)
+        {
+            CityDto city = _cityService.GetByName(application.ApplicantCityName);
+
+            if (city == null)
+                return false;
+
+            JobApplicationIndexUnit newApplication = _mapper.Map<JobApplicationIndexUnit>(application);
+            newApplication.CvContent = ParseTextFromPdfFormFile(application.CvFile);
+            newApplication.CvLetterContent = ParseTextFromPdfFormFile(application.CoverLetterFile);
+            newApplication.CvFileName = application.CvFile.FileName;
+            newApplication.CvLetterFileName = application.CoverLetterFile.FileName;
+            newApplication.GeoLocation = new GeoLocation(city.Latitude, city.Longitude);
+            newApplication.CityName = application.CityName;
+            newApplication.Id = Guid.NewGuid();
+            var response = await _elasticClient.CreateDocumentAsync(newApplication);
+
+            if (response.IsValid)
+            {
+                string cvFilePath = @$"JobApplications/{newApplication.Id}-cv-{application.CvFile.FileName}";
+                string letterFilePath = @$"JobApplications/{newApplication.Id}-cover-{application.CoverLetterFile.FileName}";
+
+                //CV file save
+                new FileInfo(cvFilePath).Directory?.Create();
+                using (FileStream stream = new FileStream(cvFilePath, FileMode.Create))
+                {
+                    application.CvFile.CopyTo(stream);
+
+                }
+                //Cover letter save
+                new FileInfo(letterFilePath).Directory?.Create();
+                using (FileStream stream = new FileStream(letterFilePath, FileMode.Create))
+                {
+                    application.CoverLetterFile.CopyTo(stream);
+
+                }
+                return true;
+            }
+                
+
+            return false;
+
         }
 
         public async Task<List<SearchResultWithHighlightsDto>> GetAll()
@@ -189,5 +237,69 @@ namespace Udd.Api.Services
                 var response = await _elasticClient.CreateDocumentAsync(i);
             }
         }
+
+        public string ParseTextFromPdfFormFile(IFormFile file)
+        {
+            MemoryStream ms = new MemoryStream();
+            file.OpenReadStream().CopyTo(ms);
+            byte[] fileBytes = ms.ToArray();
+
+            MemoryStream memory = new MemoryStream(fileBytes);
+            BinaryReader BRreader = new BinaryReader(memory);
+            StringBuilder text = new StringBuilder();
+
+
+            iText.Kernel.Pdf.PdfReader iTextReader = new iText.Kernel.Pdf.PdfReader(memory);
+            iText.Kernel.Pdf.PdfDocument pdfDoc = new iText.Kernel.Pdf.PdfDocument(iTextReader);
+
+            int numberofpages = pdfDoc.GetNumberOfPages();
+            for (int page = 1; page <= numberofpages; page++)
+            {
+                iText.Kernel.Pdf.Canvas.Parser.Listener.ITextExtractionStrategy strategy = new iText.Kernel.Pdf.Canvas.Parser.Listener.SimpleTextExtractionStrategy();
+                string currentText = iText.Kernel.Pdf.Canvas.Parser.PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                currentText = Encoding.UTF8.GetString(ASCIIEncoding.Convert(
+                    Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(currentText)));
+
+
+                text.Append(currentText);
+            }
+            return text.ToString();
+        }
+
+
+        public (string fileType, byte[] archiveData, string archiveName) GetJobApplicationDocsZip(Guid docID)
+        {
+            var response = _elasticClient.Get<JobApplicationDto>(docID, g => g.Index("cv_index"));
+            JobApplicationDto doc = response.Source;
+
+            var zipName = $"{doc.ApplicantName} {doc.ApplicantLastname}.zip";
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+                {
+
+                    var theFile = archive.CreateEntry(doc.CvFileName);
+                    using (var streamWriter = new StreamWriter(theFile.Open()))
+                    {
+                        using (FileStream stream = new FileStream(@$"JobApplications/{doc.Id}-cv-{doc.CvFileName}", FileMode.Open))
+                            streamWriter.Write(stream);
+                    }
+
+                    theFile = archive.CreateEntry(doc.CvLetterFileName);
+                    using (var streamWriter = new StreamWriter(theFile.Open()))
+                    {
+                        using (FileStream stream = new FileStream(@$"JobApplications/{doc.Id}-cover-{doc.CvLetterFileName}", FileMode.Open))
+                            streamWriter.Write(stream);
+                    }
+
+
+                }
+
+                return ("application/zip", memoryStream.ToArray(), zipName);
+            }
+        }
+
+
     }
 }

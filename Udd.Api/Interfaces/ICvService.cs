@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,9 @@ namespace Udd.Api.Interfaces
         Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query);
         Task<List<SearchResultWithHighlightsDto>> GetAll();
         Task<List<SearchResultWithHighlightsDto>> GetByLocation(string cityName, int radius);
+        Task<bool> AddNewApplication(NewJobApplicationDto application);
+        string ParseTextFromPdfFormFile(IFormFile file);
+        (string fileType, byte[] archiveData, string archiveName) GetJobApplicationDocsZip(Guid docID);
         Task IndexTestDocs();
     }
 }

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Udd.Api.Dto;
 using Udd.Api.Interfaces;
 
 namespace Udd.Api.Controllers
@@ -21,19 +23,19 @@ namespace Udd.Api.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("reindex")]
         public async Task<IActionResult> Reindex()
         {
-            await  _cvService.IndexTestDocs();
+            await _cvService.IndexTestDocs();
             return Ok();
         }
 
 
         [HttpGet("personal-info")]
-        public async Task<IActionResult> SearchByName([FromQuery] [Required] string name, [FromQuery][Required] string lastName)
+        public async Task<IActionResult> SearchByName([FromQuery][Required] string name, [FromQuery][Required] string lastName)
         {
             return Ok(await _cvService.GetCvsByNameAndLastname(name, lastName));
-            
+
         }
 
         [HttpGet("education")]
@@ -63,5 +65,24 @@ namespace Udd.Api.Controllers
             return Ok(await _cvService.GetAll());
 
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddNewApplication([FromForm] NewJobApplicationDto application)
+        {
+            bool response = await _cvService.AddNewApplication(application);
+            if (response)
+                return Ok();
+
+            return BadRequest();
+        }
+
+        [HttpGet("{docID}")]
+        public IActionResult GetImagesForPost(Guid docID)
+        {
+            var (fileType, archiveData, archiveName) = _cvService.GetJobApplicationDocsZip(docID);
+
+            return File(archiveData, fileType, archiveName);
+        }
+
     }
 }

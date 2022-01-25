@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { JobApplication } from 'src/app/models/job-application.model';
 import { Observable } from 'rxjs';
 import { SearchResult } from './../../models/content-search-result.model';
 
@@ -48,6 +47,20 @@ export class CvService {
     params = params.append('content', content);
 
     return this.http.get<SearchResult[]>(requestUrl, {params:params});
+  }
+
+  addNewJobApplication(name:string, lastName:string, city:string, educationLevel:number, cvFile:any, coverLetter:any):Observable<boolean>
+  {
+    let requestUrl = environment.serverURL.concat("job-documents");
+    const formData = new FormData();
+    formData.append('applicantName', name);
+    formData.append('applicantLastname', lastName);
+    formData.append('applicantCityName', city);
+    formData.append('applicantEducationLevel', educationLevel.toString());
+    formData.append('cvFile', cvFile);
+    formData.append('coverLetterFile', coverLetter);
+
+    return this.http.post<boolean>(requestUrl, formData);
   }
 
 }

@@ -12,6 +12,7 @@ namespace Udd.Api.Models
         public string ApplicantName { get; set; }
         public string ApplicantLastname { get; set; }
         public int ApplicantEducationlevel { get; set; }
+        public string CityName { get; set; }
         public string CvContent { get; set; }
         public string CvLetterContent { get; set; }
         public string CvFileName { get; set; }

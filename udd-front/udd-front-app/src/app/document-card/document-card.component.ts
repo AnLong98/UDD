@@ -1,5 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { JobApplication } from './../models/job-application.model';
 import { SearchResult } from './../models/content-search-result.model';
 
 @Component({

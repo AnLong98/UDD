@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component,  Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CvService } from './../services/cv/cv.service';
@@ -12,7 +12,7 @@ export class AddApplicationComponent implements OnInit {
 
   @Input()
   accountStatus: string;
-  educationLevel: any[] =
+  educationLevels: any[] =
   [
     {display:'Elementary school', value: 1},
     {display:'High school', value: 2},
@@ -21,19 +21,18 @@ export class AddApplicationComponent implements OnInit {
     {display:'PhD degree', value: 5}
   ];
 
-  editUserForm = new FormGroup({
+  jobAppForm = new FormGroup({
     name : new FormControl('', Validators.required),
     lastname: new FormControl('', Validators.required),
-    username: new FormControl('', Validators.required),
-    email: new FormControl('', Validators.required),
-    imageURL : new FormControl(null),
-    role: new FormControl('', Validators.nullValidator)
+    city: new FormControl('', Validators.required),
+    cvFile: new FormControl(null, Validators.required),
+    coverLetter : new FormControl(null,  Validators.required),
+    educationLevel: new FormControl('1', Validators.nullValidator),
+    cvFileSource: new FormControl('', Validators.required),
+    letterSource: new FormControl('', Validators.required),
   })
 
-  imagePreview:string = '';
   isLoading:boolean = true;
-  @ViewChild('closeBtn') closeBtn: ElementRef;
-  @ViewChild('resetBtn') resetBtn: ElementRef;
 
   constructor(private router:Router, private cvService:CvService) { }
 
@@ -41,10 +40,58 @@ export class AddApplicationComponent implements OnInit {
 
   }
 
+  get f(){
+    return this.jobAppForm.controls;
+  }
 
+  onCvFileChange(event) {
+  
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      this.jobAppForm.patchValue({
+        letterSource: file
+      });
+    }
+  }
+
+  onLetterFileChange(event) {
+  
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      this.jobAppForm.patchValue({
+        cvFileSource: file
+      });
+    }
+  }
+     
+     
   saveChanges()
   {
-    
+    if(!this.jobAppForm.valid)
+      {
+        alert('Form invalid!');
+        return;
+      }
+    let name = this.jobAppForm.controls['name'].value;
+    let lastName = this.jobAppForm.controls['lastname'].value;
+    let city = this.jobAppForm.controls['city'].value;
+    let educationLevel = this.jobAppForm.controls['educationLevel'].value;
+    let cvFile = this.jobAppForm.controls['cvFileSource'].value;
+    let letterFile = this.jobAppForm.controls['letterSource'].value;
+    this.isLoading = true;
+    this.cvService.addNewJobApplication(name, lastName, city, educationLevel, cvFile, letterFile).subscribe(
+        data=>{
+          this.isLoading = false;
+          alert("File uploaded.");
+
+        },
+
+        error=>{
+          this.isLoading = false;
+          alert("File not uploaded.");
+        }
+    );
+
   }
 
 }
