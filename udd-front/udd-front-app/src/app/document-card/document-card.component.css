@@ -6,6 +6,11 @@
     width:20rem;
     overflow-y: auto;
   }
+
+  
+.clickable {
+  cursor: pointer;
+}
   
   .card-title, .title-row{
     height:30px;

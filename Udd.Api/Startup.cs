@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Udd.Api.Extensions;
 using Udd.Api.Infrastructure;
@@ -38,7 +39,9 @@ namespace Udd.Api
             services.AddElasticsearch(Configuration);
             services.AddScoped<ICvService, CvService>();
             services.AddScoped<ICityService, CityService>();
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+                                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Udd.Api", Version = "v1" });

@@ -8,6 +8,7 @@
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 3">Education: BSc</p> 
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 4">Education: MSc</p>
       <p class="m-0" *ngIf="application.jobApplication.applicantEducationlevel == 5">Education: PhD</p>  
+      <a  class="clickable" (click)="downloadFile()" ><mat-icon>file_download</mat-icon></a>
     </div>
     
     

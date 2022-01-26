@@ -2,6 +2,7 @@ import { Component,  Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CvService } from './../services/cv/cv.service';
+import { ValidationService } from './../services/cv/validation.service';
 
 @Component({
   selector: 'app-add-application',
@@ -32,9 +33,9 @@ export class AddApplicationComponent implements OnInit {
     letterSource: new FormControl('', Validators.required),
   })
 
-  isLoading:boolean = true;
+  isLoading:boolean = false;
 
-  constructor(private router:Router, private cvService:CvService) { }
+  constructor(private router:Router, private cvService:CvService, private validation:ValidationService) { }
 
   ngOnInit(): void {
 
@@ -69,7 +70,7 @@ export class AddApplicationComponent implements OnInit {
   {
     if(!this.jobAppForm.valid)
       {
-        alert('Form invalid!');
+        this.validation.validateAllFields(this.jobAppForm);
         return;
       }
     let name = this.jobAppForm.controls['name'].value;
@@ -83,7 +84,7 @@ export class AddApplicationComponent implements OnInit {
         data=>{
           this.isLoading = false;
           alert("File uploaded.");
-
+          this.router.navigate(['/']);
         },
 
         error=>{

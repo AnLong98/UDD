@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { SearchResult } from './../../models/content-search-result.model';
+import { CombinedSearchQuery } from './../../models/combined-search.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,11 @@ import { SearchResult } from './../../models/content-search-result.model';
 export class CvService {
 
   constructor(private http: HttpClient) { }
+
+  downloadAttachment(documentId: string): Observable<any> {
+    let requestUrl = environment.serverURL.concat(`job-documents/${documentId}`);
+		return this.http.get(requestUrl, {responseType: 'blob'});
+  }
 
   getByGeoLocation(city:string, radiusKm:number):Observable<SearchResult[]>
   {
@@ -38,6 +44,23 @@ export class CvService {
     params = params.append('lastName', lastName);
 
     return this.http.get<SearchResult[]>(requestUrl, {params:params});
+  }
+
+  getByPhrase(phrase:string):Observable<SearchResult[]>
+  {
+    let requestUrl = environment.serverURL.concat("job-documents/phrase");
+    let params = new HttpParams();
+    params = params.append('phrase', phrase);
+
+    return this.http.get<SearchResult[]>(requestUrl, {params:params});
+  }
+
+
+  getBoolean(query:CombinedSearchQuery):Observable<SearchResult[]>
+  {
+    let requestUrl = environment.serverURL.concat("job-documents/boolean");
+
+    return this.http.post<SearchResult[]>(requestUrl, query);
   }
 
   getByContent(content:string):Observable<SearchResult[]>

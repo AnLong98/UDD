@@ -40,7 +40,7 @@ namespace Udd.Api.Services
             newApplication.CvFileName = application.CvFile.FileName;
             newApplication.CvLetterFileName = application.CoverLetterFile.FileName;
             newApplication.GeoLocation = new GeoLocation(city.Latitude, city.Longitude);
-            newApplication.CityName = application.CityName;
+            newApplication.CityName = application.ApplicantCityName;
             newApplication.Id = Guid.NewGuid();
             var response = await _elasticClient.CreateDocumentAsync(newApplication);
 
@@ -73,29 +73,19 @@ namespace Udd.Api.Services
 
         public async Task<List<SearchResultWithHighlightsDto>> GetAll()
         {
-            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
-            var response = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
             s => s.Query(q =>
                        q.MatchAll()));
 
-            foreach (var document in response.Documents)
-            {
-                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
-                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
-                results.Add(result);
-                result.SearchHighlights = new List<string>();
-            }
-
-            return results;
+            return RepackHighlightsIntoResult(searchResponse);
         }
 
         public async Task<List<SearchResultWithHighlightsDto>> GetByLocation(string cityName, int radius)
         {
-            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
             CityDto city = _cityService.GetByName(cityName);
             if (city == null)
                 return null;
-            var response = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
             s => s.Query(q => q
                         .GeoDistance(g => g
                         .Boost(1.1)
@@ -107,20 +97,11 @@ namespace Udd.Api.Services
                         .ValidationMethod(GeoValidationMethod.IgnoreMalformed)
                     )));
 
-            foreach (var document in response.Documents)
-            {
-                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
-                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
-                results.Add(result);
-                result.SearchHighlights = new List<string>();
-            }
-
-            return results;
+            return RepackHighlightsIntoResult(searchResponse);
         }
 
         public async  Task<List<SearchResultWithHighlightsDto>> GetCvsByCvLetterContent(string content)
-        {
-            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
+        { 
             var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
                                                         .Query(q => q
                                                             .Bool(b => b
@@ -138,59 +119,23 @@ namespace Udd.Api.Services
                                                                 .PostTags("</b></em>")
                                                                 )));
 
-            var highlightsInResponse = searchResponse.Hits.Select(x => x.Highlight);
-            foreach(var document in searchResponse.Documents)
-            {
-                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
-                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
-                result.SearchHighlights = new List<string>();
-                foreach (var hit in searchResponse.Hits) // cycle through  hits to look for match
-                {
-                    if (hit.Id == document.Id.ToString()) //found the hit that matches document
-                    {
-                        foreach (var highlightField in hit.Highlight)
-                        {
-                            if (highlightField.Key == "cvLetterContent")
-                            {
-                                foreach (var highlight in highlightField.Value)
-                                {
-                                    result.SearchHighlights.Add(highlight);
-                                }
-                            }
-                        }
-                    }
-                }
-                results.Add(result);
-
-            }
-
-
-            return results;
+            return RepackHighlightsIntoResult(searchResponse);
         }
 
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsByEducationLevel(int level)
         {
-            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
-            var response = await _elasticClient.SearchAsync<JobApplicationDto>(
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(
                 s => s.Query(q =>
                                q.Term(x => x.ApplicantEducationlevel, level)));
 
-            foreach (var document in response.Documents)
-            {
-                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
-                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
-                results.Add(result);
-                result.SearchHighlights = new List<string>();
-            }
-
-            return results;
+            return RepackHighlightsIntoResult(searchResponse);
 
         }
 
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsByNameAndLastname(string name, string lastName)
         {
             List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
-            var response = await  _elasticClient.SearchAsync<JobApplicationDto>(s => s
+            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
                                                         .Query(q => q
                                                             .Bool(b => b
                                                                 .Should(mu => mu
@@ -208,26 +153,85 @@ namespace Udd.Api.Services
                                                         )
                                                     );
 
-            foreach (var document in response.Documents)
-            {
-                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
-                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
-                results.Add(result);
-                result.SearchHighlights = new List<string>();
-            }
-
-            return results;
+            return RepackHighlightsIntoResult(searchResponse);
         }
 
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query)
         {
-
-            /*var searchRequest = new SearchRequest<JobApplicationDto>
-            {
-                Query = new QueryContainer(new MatchQuery { Field = Property.Path<JobApplicationDto>(p => p.Name), Query = "test" }),
+            QueryContainer container = new TermQuery 
+            { 
+                Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantEducationlevel),
+                Value = query.ApplicantEducationLevel 
             };
-            */
-            return null;
+
+            TermQuery name = new TermQuery
+            {
+                Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantName),
+                Value = query.ApplicantName
+            };
+
+            TermQuery lastName = new TermQuery
+            {
+                Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantLastname),
+                Value = query.ApplicantLastName
+            };
+
+            TermQuery content = new TermQuery
+            {
+                Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.CvContent),
+                Value = query.CvLetterContent
+            };
+
+            //Combine operators
+            if (query.Operator1 == Enums.QueryOperator.AND)
+            {
+                container = container && name;
+            }
+            else
+            {
+                container = container || name;
+            }
+
+            if (query.Operator2 == Enums.QueryOperator.AND)
+            {
+                container = container && lastName;
+            }
+            else
+            {
+                container = container || lastName;
+            }
+
+            if (query.Operator3 == Enums.QueryOperator.AND)
+            {
+                container = container && content;
+            }
+            else
+            {
+                container = container || content;
+            }
+
+            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
+            {
+                Query = container,
+                Highlight = new Highlight
+                {
+                    PreTags = new[] { "<span>", "<b>" },
+                    PostTags = new[] { "</span>", "</b>" },
+                    Encoder = HighlighterEncoder.Html,
+                    Fields = new Dictionary<Field, IHighlightField>
+                    {
+                        {
+                            "cvLetterContent", new HighlightField
+                            {
+                                Type = HighlighterType.Plain,
+                                ForceSource = true,
+                                
+                            }
+                        }
+                    }
+                }
+            });
+            return RepackHighlightsIntoResult(searchResponse);
         }
 
         public async Task IndexTestDocs()
@@ -245,7 +249,6 @@ namespace Udd.Api.Services
             byte[] fileBytes = ms.ToArray();
 
             MemoryStream memory = new MemoryStream(fileBytes);
-            BinaryReader BRreader = new BinaryReader(memory);
             StringBuilder text = new StringBuilder();
 
 
@@ -300,6 +303,62 @@ namespace Udd.Api.Services
             }
         }
 
+        public async Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase)
+        {
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
+                                                       .Query(q => q
+                                                           .MultiMatch( mm => mm
+                                                                .Fields( f => f
+                                                                    .Field(x => x.ApplicantName)
+                                                                    .Field(x => x.ApplicantLastname)
+                                                                    .Field(x => x.CityName)
+                                                                    .Field(x => x.CvContent)
+                                                                    .Field(x => x.CvLetterContent)
+                                                                    )
+                                                                .Query(phrase)
+                                                                .Type(TextQueryType.Phrase)
+                                                           )
+                                                       ).Highlight(h => h
+                                                           .Fields(f => f
+                                                               .Field("*")
+                                                               .PreTags("<em><b>")
+                                                               .PostTags("</b></em>")
+                                                               )));
+
+            return RepackHighlightsIntoResult(searchResponse);
+        }
+
+
+        private List<SearchResultWithHighlightsDto> RepackHighlightsIntoResult(ISearchResponse<JobApplicationIndexUnit> searchResponse)
+        {
+            List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
+            foreach (var document in searchResponse.Documents)
+            {
+                SearchResultWithHighlightsDto result = new SearchResultWithHighlightsDto();
+                result.JobApplication = _mapper.Map<JobApplicationDto>(document);
+                result.SearchHighlights = new List<string>();
+                foreach (var hit in searchResponse.Hits) // cycle through  hits to look for match
+                {
+                    if (hit.Id == document.Id.ToString()) //found the hit that matches document
+                    {
+                        foreach (var highlightField in hit.Highlight)
+                        {
+
+                            foreach (var highlight in highlightField.Value)
+                            {
+                                result.SearchHighlights.Add(highlight);
+                            }
+
+                        }
+                    }
+                }
+                results.Add(result);
+
+            }
+
+            return results;
+
+        }
 
     }
 }

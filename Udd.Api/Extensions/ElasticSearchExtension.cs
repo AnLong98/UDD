@@ -17,7 +17,8 @@ namespace Udd.Api.Extensions
             var defaultIndex = configuration["elasticsearch:index"];
 
             var settings = new ConnectionSettings(new Uri(url))
-                .DefaultIndex(defaultIndex);
+                .DefaultIndex(defaultIndex)
+                .EnableDebugMode();
 
             AddDefaultMappings(settings);
 
@@ -48,6 +49,8 @@ namespace Udd.Api.Extensions
                          .Text(t => t
                             .Name(n => n.CvContent)
                                 .Analyzer("serbian"))
+                         .Text(t => t
+                            .Name(n => n.CityName))
                         .Text(t => t
                             .Name(n => n.CvFileName)
                                 .Analyzer("serbian"))

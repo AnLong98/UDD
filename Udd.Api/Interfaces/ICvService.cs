@@ -17,6 +17,7 @@ namespace Udd.Api.Interfaces
         Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query);
         Task<List<SearchResultWithHighlightsDto>> GetAll();
         Task<List<SearchResultWithHighlightsDto>> GetByLocation(string cityName, int radius);
+        Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase);
         Task<bool> AddNewApplication(NewJobApplicationDto application);
         string ParseTextFromPdfFormFile(IFormFile file);
         (string fileType, byte[] archiveData, string archiveName) GetJobApplicationDocsZip(Guid docID);

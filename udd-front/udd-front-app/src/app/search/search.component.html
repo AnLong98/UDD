@@ -59,6 +59,26 @@
 
                 </div>
 
+               
+                <div class="row">
+
+                    <div class="col-md-10">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Cover letter content</mat-label>
+                        <input matInput formControlName="coverLetterControl" placeholder="city" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-2">
+                        <button type="button" (click)="searchByContent()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by content
+                        </button>
+                    </div>
+
+                </div>
+
+
                 <div class="row">
 
                     <div class="col-md-5">
@@ -86,33 +106,106 @@
 
                 </div>
 
+
                 <div class="row">
 
                     <div class="col-md-10">
                         <mat-form-field class="example-full-width" appearance="legacy">
-                        <mat-label>Cover letter content</mat-label>
-                        <input matInput formControlName="coverLetterControl" placeholder="city" >
+                        <mat-label>Phrase query</mat-label>
+                        <input matInput formControlName="phraseControl" placeholder="write a phrase" >
                         
                         </mat-form-field>
                     </div> 
 
                     <div class="col-md-2">
-                        <button type="button" (click)="searchByContent()"  class="button-add pt-2 d-flex justify-content-center w-10" >
-                            Search by content
+                        <button type="button" (click)="searchByPhrase()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                            Search by phrase
                         </button>
                     </div>
 
                 </div>
+            </form>
+
+            <form [formGroup]="combinedSearchForm">
+                <div class="row">
+                    <div class="col-md-2">
+                        <mat-form-field appearance="legacy" class="example-full-width">
+                        <mat-label>Education level</mat-label>
+                        <mat-select formControlName="edLevelControl">
+                                <mat-option value="1" >Elementary school</mat-option>
+                                <mat-option value="2">High school</mat-option>
+                                <mat-option value="3">BSc</mat-option>
+                                <mat-option value="4">MSc</mat-option>
+                                <mat-option value="5">PhD</mat-option>
+                        </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-md-1">
+                        <mat-form-field appearance="legacy" class="example-full-width">
+                        <mat-label>OP</mat-label>
+                        <mat-select formControlName="op1Control">
+                            <mat-option value="AND" >AND</mat-option>
+                            <mat-option value="OR">OR</mat-option>
+                        </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-md-2">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Name</mat-label>
+                        <input matInput formControlName="nameControl" placeholder="Name" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-1">
+                        <mat-form-field appearance="legacy" class="example-full-width">
+                        <mat-label>OP</mat-label>
+                        <mat-select formControlName="op2Control">
+                            <mat-option value="AND" >AND</mat-option>
+                            <mat-option value="OR">OR</mat-option>
+                        </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-md-2">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Last Name</mat-label>
+                        <input matInput formControlName="lastNameControl" placeholder="Last name" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                    <div class="col-md-1">
+                        <mat-form-field appearance="legacy" class="example-full-width">
+                        <mat-label>OP</mat-label>
+                        <mat-select formControlName="op3Control">
+                                <mat-option value="AND" >AND</mat-option>
+                                <mat-option value="OR">OR</mat-option>
+                        </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-md-3">
+                        <mat-form-field class="example-full-width" appearance="legacy">
+                        <mat-label>Cover letter</mat-label>
+                        <input matInput formControlName="coverLetterControl" placeholder="Cover letter content" >
+                        
+                        </mat-form-field>
+                    </div> 
+
+                </div>
+
 
                 <div class="row">
                     <div class="col-md-12">
-                        <button type="button" (click)="searchByContent()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                        <button type="button" (click)="searchBoolean()"  class="button-add pt-2 d-flex justify-content-center w-10" >
                             Search combined
                         </button>
                     </div>
                 </div>
-            </form>
-                    
+            </form>    
         </div>
         <app-document-card  *ngFor="let document of applications" [application]='document'></app-document-card>
 </div>

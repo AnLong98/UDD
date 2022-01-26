@@ -38,6 +38,13 @@ namespace Udd.Api.Controllers
 
         }
 
+        [HttpPost("boolean")]
+        public async Task<IActionResult> BoolQuery([FromBody] CombinedQueryDto query)
+        {
+            return Ok(await _cvService.GetCvsCombinedQuery(query));
+
+        }
+
         [HttpGet("education")]
         public async Task<IActionResult> SearchByEducation([FromQuery][Required] int educationLevel)
         {
@@ -56,6 +63,13 @@ namespace Udd.Api.Controllers
         public async Task<IActionResult> SearchByLocation([FromQuery][Required] string cityName, [FromQuery][Required] int radiusKm)
         {
             return Ok(await _cvService.GetByLocation(cityName, radiusKm));
+
+        }
+
+        [HttpGet("phrase")]
+        public async Task<IActionResult> SearchByLocation([FromQuery][Required] string phrase)
+        {
+            return Ok(await _cvService.SearchAllFieldsByPhrase(phrase));
 
         }
 
