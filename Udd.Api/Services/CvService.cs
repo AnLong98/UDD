@@ -100,21 +100,21 @@ namespace Udd.Api.Services
             return RepackHighlightsIntoResult(searchResponse);
         }
 
-        public async  Task<List<SearchResultWithHighlightsDto>> GetCvsByCvLetterContent(string content)
+        public async  Task<List<SearchResultWithHighlightsDto>> GetCvsByCvContent(string content)
         { 
             var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
                                                         .Query(q => q
                                                             .Bool(b => b
                                                                 .Must(mu => mu
                                                                     .QueryString(m => m
-                                                                        .Fields(f => f.Field(l => l.CvLetterContent))
+                                                                        .Fields(f => f.Field(l => l.CvContent))
                                                                         .Query(content)
                                                                     )
                                                                 )
                                                             )
                                                         ).Highlight(h => h
                                                             .Fields(f => f
-                                                                .Field(x => x.CvLetterContent)
+                                                                .Field(x => x.CvContent)
                                                                 .PreTags("<em><b>")
                                                                 .PostTags("</b></em>")
                                                                 )));
@@ -179,7 +179,7 @@ namespace Udd.Api.Services
             TermQuery content = new TermQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.CvContent),
-                Value = query.CvLetterContent
+                Value = query.CvContent
             };
 
             //Combine operators
@@ -221,7 +221,7 @@ namespace Udd.Api.Services
                     Fields = new Dictionary<Field, IHighlightField>
                     {
                         {
-                            "cvLetterContent", new HighlightField
+                            "cvContent", new HighlightField
                             {
                                 Type = HighlighterType.Plain,
                                 ForceSource = true,
@@ -270,40 +270,18 @@ namespace Udd.Api.Services
         }
 
 
-        public (string fileType, byte[] archiveData, string archiveName) GetJobApplicationDocsZip(Guid docID)
+        public FileStream GetJobApplicationDocsZip(Guid docID)
         {
             var response = _elasticClient.Get<JobApplicationDto>(docID, g => g.Index("cv_index"));
             JobApplicationDto doc = response.Source;
+            var zipName = $"archive-{DateTime.Now.ToString("yyyy_MM_dd-HH_mm_ss")}.zip";
+            string cvFile = $"{doc.Id}-cv-{doc.CvFileName}";
 
-            var zipName = $"{doc.ApplicantName} {doc.ApplicantLastname}.zip";
-
-            using (var memoryStream = new MemoryStream())
-            {
-                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
-                {
-
-                    var theFile = archive.CreateEntry(doc.CvFileName);
-                    using (var streamWriter = new StreamWriter(theFile.Open()))
-                    {
-                        using (FileStream stream = new FileStream(@$"JobApplications/{doc.Id}-cv-{doc.CvFileName}", FileMode.Open))
-                            streamWriter.Write(stream);
-                    }
-
-                    theFile = archive.CreateEntry(doc.CvLetterFileName);
-                    using (var streamWriter = new StreamWriter(theFile.Open()))
-                    {
-                        using (FileStream stream = new FileStream(@$"JobApplications/{doc.Id}-cover-{doc.CvLetterFileName}", FileMode.Open))
-                            streamWriter.Write(stream);
-                    }
-
-
-                }
-
-                return ("application/zip", memoryStream.ToArray(), zipName);
-            }
+            FileStream stream = new FileStream($@"JobApplications/{cvFile}", FileMode.Open);
+            return stream;
         }
 
-        public async Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase)
+            public async Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase)
         {
             var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
                                                        .Query(q => q

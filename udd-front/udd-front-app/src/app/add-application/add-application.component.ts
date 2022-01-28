@@ -50,7 +50,7 @@ export class AddApplicationComponent implements OnInit {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
       this.jobAppForm.patchValue({
-        letterSource: file
+        cvFileSource: file
       });
     }
   }
@@ -60,7 +60,7 @@ export class AddApplicationComponent implements OnInit {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
       this.jobAppForm.patchValue({
-        cvFileSource: file
+        letterSource: file
       });
     }
   }

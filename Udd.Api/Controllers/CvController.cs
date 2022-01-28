@@ -55,7 +55,7 @@ namespace Udd.Api.Controllers
         [HttpGet("cv-content")]
         public async Task<IActionResult> SearchByCvLetterContent([FromQuery][Required] string content)
         {
-            return Ok(await _cvService.GetCvsByCvLetterContent(content));
+            return Ok(await _cvService.GetCvsByCvContent(content));
 
         }
 
@@ -93,9 +93,8 @@ namespace Udd.Api.Controllers
         [HttpGet("{docID}")]
         public IActionResult GetImagesForPost(Guid docID)
         {
-            var (fileType, archiveData, archiveName) = _cvService.GetJobApplicationDocsZip(docID);
 
-            return File(archiveData, fileType, archiveName);
+            return File(_cvService.GetJobApplicationDocsZip(docID), "application/octet-stream", "cv.pdf");
         }
 
     }

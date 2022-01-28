@@ -21,7 +21,7 @@ export class DocumentCardComponent implements OnInit {
   downloadFile() {
 		this.cvService.downloadAttachment(this.application.jobApplication.id).subscribe(
       (response: Blob) => { 
-      fileSaver.saveAs(response, "download");
+      fileSaver.saveAs(response, this.application.jobApplication.cvFileName);
 		},
      error =>
      {
