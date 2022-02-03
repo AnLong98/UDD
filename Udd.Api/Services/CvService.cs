@@ -158,65 +158,123 @@ namespace Udd.Api.Services
 
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query)
         {
-            QueryContainer container = new TermQuery 
+            List<TermQuery> queries = new List<TermQuery>();
+            
+            TermQuery education = new TermQuery 
             { 
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantEducationlevel),
-                Value = query.ApplicantEducationLevel 
+                Value = query.ApplicantEducationLevel
             };
+            queries.Add(education);
 
             TermQuery name = new TermQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantName),
                 Value = query.ApplicantName
             };
+            queries.Add(name);
 
             TermQuery lastName = new TermQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantLastname),
                 Value = query.ApplicantLastName
             };
+            queries.Add(lastName);
 
             TermQuery content = new TermQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.CvContent),
                 Value = query.CvContent
             };
+            queries.Add(content);
 
-            //Combine operators
+            //Combine operators Prva izvorna verzija gde NEST prebacuje u bool query
+            
+            
+             QueryContainer container = education;
+             if (query.Operator1 == Enums.QueryOperator.AND)
+             {
+                 container = container && name;
+             }
+             else
+             {
+                 container = container || name;
+             }
+
+             if (query.Operator2 == Enums.QueryOperator.AND)
+             {
+                 container = container && lastName;
+             }
+             else
+             {
+                 container = container || lastName;
+             }
+
+             if (query.Operator3 == Enums.QueryOperator.AND)
+             {
+                 container = container && content;
+             }
+             else
+             {
+                 container = container || content;
+             }
+
+
+            //Druga verzija gde ja tu nesto petljam da bude preciznije/smislenije
+            List<QueryContainer> must = new List<QueryContainer>();
+            List<QueryContainer> should = new List<QueryContainer>();
+
             if (query.Operator1 == Enums.QueryOperator.AND)
             {
-                container = container && name;
+                must.Add(education);
+                must.Add(name);
+                queries.Remove(education);
+                queries.Remove(name);
             }
-            else
+            if(query.Operator2 == Enums.QueryOperator.AND)
             {
-                container = container || name;
+                if(!must.Contains(name))
+                {
+                    must.Add(name);
+                    queries.Remove(name);
+                }
+                must.Add(lastName);
+                queries.Remove(lastName);
             }
-
-            if (query.Operator2 == Enums.QueryOperator.AND)
-            {
-                container = container && lastName;
-            }
-            else
-            {
-                container = container || lastName;
-            }
-
             if (query.Operator3 == Enums.QueryOperator.AND)
             {
-                container = container && content;
+                if (!must.Contains(lastName))
+                {
+                    must.Add(lastName);
+                   
+                    queries.Remove(lastName);
+                }
+                must.Add(content);
+                queries.Remove(content);
             }
-            else
+
+            foreach (var queri in queries)
             {
-                container = container || content;
+
+                should.Add(queri);
+
             }
+            
+            //Kraj druge
+
+            BoolQuery q = new BoolQuery
+            {
+                Must = must,
+                Should = should
+            };
 
             var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
             {
-                Query = container,
+                Query = container, //q
                 Highlight = new Highlight
                 {
-                    PreTags = new[] { "<span>", "<b>" },
-                    PostTags = new[] { "</span>", "</b>" },
+                    PreTags = new[] { "<b>" },
+                    PostTags = new[] { "</b>" },
                     Encoder = HighlighterEncoder.Html,
                     Fields = new Dictionary<Field, IHighlightField>
                     {

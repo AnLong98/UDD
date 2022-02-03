@@ -4,6 +4,8 @@ import { CvService } from './../services/cv/cv.service';
 import { SearchResult } from './../models/content-search-result.model';
 import { CombinedSearchQuery } from './../models/combined-search.model';
 import { ValidationService } from './../services/cv/validation.service';
+import { CityService } from './../services/cv/city.service';
+import { City } from '../models/city.model';
 
 @Component({
   selector: 'app-search',
@@ -37,10 +39,22 @@ export class SearchComponent implements OnInit {
   );
   applications:SearchResult[] = [];
   isLoading:boolean = false;
+  cities:City[] = [];
 
-  constructor(private cvService:CvService, private validation:ValidationService) { }
+  constructor(private cvService:CvService, private cityService:CityService, private validation:ValidationService) { }
 
   ngOnInit(): void {
+    this.loadCities();
+
+  }
+
+  loadCities(){
+    this.cityService.getCities()
+    .subscribe(
+      data =>{
+        this.cities = data
+      }
+    )
   }
 
   searchBoolean(){
@@ -62,7 +76,7 @@ export class SearchComponent implements OnInit {
     query.applicantName = name;
     query.applicantLastname = lastName;
     query.applicantEducationlevel = ed;
-    query.cvLetterContent = cv;
+    query.cvContent = cv;
     query.operator1 = op1;
     query.operator2 = op2;
     query.operator3 = op3;

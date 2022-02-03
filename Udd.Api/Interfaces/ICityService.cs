@@ -10,5 +10,6 @@ namespace Udd.Api.Interfaces
     {
         void LoadCitiesIntoDatabase(string filepath);
         CityDto GetByName(string name);
+        List<CityDto> GetAll();
     }
 }

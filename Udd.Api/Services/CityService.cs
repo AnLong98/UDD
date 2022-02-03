@@ -22,6 +22,11 @@ namespace Udd.Api.Services
             _dbContext = dbContext;
         }
 
+        public List<CityDto> GetAll()
+        {
+            return _mapper.Map<List<CityDto>>(_dbContext.Cities.ToList());
+        }
+
         public CityDto GetByName(string name)
         {
             City city = _dbContext.Cities.FirstOrDefault(x => x.Name.ToLower() == name.ToLower());

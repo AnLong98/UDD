@@ -27,6 +27,12 @@ namespace Udd.Api.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok(_cityService.GetAll());
+        }
+
 
     }
 }
