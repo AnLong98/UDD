@@ -87,7 +87,7 @@
                             <mat-select formControlName="cityControl">
                                     <mat-option *ngFor="let city of cities" [value]="city.name" >{{city.name}}</mat-option>
                             </mat-select>
-                            </mat-form-field>
+                        </mat-form-field>
                     </div> 
 
                     <div class="col-md-5">
@@ -206,7 +206,37 @@
                         </button>
                     </div>
                 </div>
-            </form>    
+            </form>  
+            
+            <div class="row">
+
+                <div class="col-md-8">
+                    <h2>Most applications come from city {{cityStats.cityName}} - {{cityStats.docsNumber}}</h2>
+                </div> 
+
+                <div class="col-md-4">
+                    <button type="button" (click)="getDocStats()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                        Get top city by aplications
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-8">
+                    <h2 *ngIf="timeStats.timeOfDay == 'AM'">Most applications were uploaded before noon - {{timeStats.docsNumber}}</h2>
+
+                    <h2 *ngIf="timeStats.timeOfDay == 'PM'">Most applications were uploaded after noon - {{timeStats.docsNumber}}</h2>
+                </div> 
+
+                <div class="col-md-4">
+                    <button type="button" (click)="getTimeStats()"  class="button-add pt-2 d-flex justify-content-center w-10" >
+                        Get top time by aplications
+                    </button>
+                </div>
+
+            </div>
         </div>
         <app-document-card  *ngFor="let document of applications" [application]='document'></app-document-card>
 </div>

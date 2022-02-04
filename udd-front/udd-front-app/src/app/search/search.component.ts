@@ -6,6 +6,8 @@ import { CombinedSearchQuery } from './../models/combined-search.model';
 import { ValidationService } from './../services/cv/validation.service';
 import { CityService } from './../services/cv/city.service';
 import { City } from '../models/city.model';
+import { CityStats } from './../models/city-stats.model';
+import { TimeStats } from '../models/time-stats.model';
 
 @Component({
   selector: 'app-search',
@@ -40,11 +42,15 @@ export class SearchComponent implements OnInit {
   applications:SearchResult[] = [];
   isLoading:boolean = false;
   cities:City[] = [];
+  cityStats:CityStats = new CityStats()
+  timeStats:TimeStats = new TimeStats()
 
   constructor(private cvService:CvService, private cityService:CityService, private validation:ValidationService) { }
 
   ngOnInit(): void {
     this.loadCities();
+    this.getDocStats();
+    this.getTimeStats();
 
   }
 
@@ -53,6 +59,24 @@ export class SearchComponent implements OnInit {
     .subscribe(
       data =>{
         this.cities = data
+      }
+    )
+  }
+
+  getDocStats(){
+    this.cvService.getCityStats()
+    .subscribe(
+      data =>{
+        this.cityStats = data;
+      }
+    )
+  }
+
+  getTimeStats(){
+    this.cvService.getTimeStats()
+    .subscribe(
+      data =>{
+        this.timeStats = data;
       }
     )
   }

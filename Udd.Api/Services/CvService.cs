@@ -42,6 +42,7 @@ namespace Udd.Api.Services
             newApplication.GeoLocation = new GeoLocation(city.Latitude, city.Longitude);
             newApplication.CityName = application.ApplicantCityName;
             newApplication.Id = Guid.NewGuid();
+            newApplication.DateCreated = DateTime.Now;
             var response = await _elasticClient.CreateDocumentAsync(newApplication);
 
             if (response.IsValid)
@@ -65,7 +66,7 @@ namespace Udd.Api.Services
                 }
                 return true;
             }
-                
+
 
             return false;
 
@@ -100,24 +101,24 @@ namespace Udd.Api.Services
             return RepackHighlightsIntoResult(searchResponse);
         }
 
-        public async  Task<List<SearchResultWithHighlightsDto>> GetCvsByCvContent(string content)
-        { 
-            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
-                                                        .Query(q => q
-                                                            .Bool(b => b
-                                                                .Must(mu => mu
-                                                                    .QueryString(m => m
-                                                                        .Fields(f => f.Field(l => l.CvContent))
-                                                                        .Query(content)
-                                                                    )
-                                                                )
-                                                            )
-                                                        ).Highlight(h => h
-                                                            .Fields(f => f
-                                                                .Field(x => x.CvContent)
-                                                                .PreTags("<em><b>")
-                                                                .PostTags("</b></em>")
-                                                                )));
+        public async Task<List<SearchResultWithHighlightsDto>> GetCvsByCvContent(string content)
+        {
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
+                                                       .Query(q => q
+                                                           .Bool(b => b
+                                                               .Must(mu => mu
+                                                                   .QueryString(m => m
+                                                                       .Fields(f => f.Field(l => l.CvContent))
+                                                                       .Query(content)
+                                                                   )
+                                                               )
+                                                           )
+                                                       ).Highlight(h => h
+                                                           .Fields(f => f
+                                                               .Field(x => x.CvContent)
+                                                               .PreTags("<em><b>")
+                                                               .PostTags("</b></em>")
+                                                               )));
 
             return RepackHighlightsIntoResult(searchResponse);
         }
@@ -135,22 +136,22 @@ namespace Udd.Api.Services
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsByNameAndLastname(string name, string lastName)
         {
             List<SearchResultWithHighlightsDto> results = new List<SearchResultWithHighlightsDto>();
-            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
-                                                        .Query(q => q
-                                                            .Bool(b => b
-                                                                .Should(mu => mu
-                                                                    .Match(m => m
-                                                                        .Field(f => f.ApplicantName)
-                                                                        .Query("*"+name+"*")
-                                                                    ), mu => mu
-                                                                    .Match(m => m
-                                                                        .Field(f => f.ApplicantLastname)
-                                                                        .Query("*"+lastName+"*")
-                                                                    )
-                                                                )
-                                                                
-                                                            )
-                                                        )
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
+                                                       .Query(q => q
+                                                           .Bool(b => b
+                                                               .Should(mu => mu
+                                                                   .Match(m => m
+                                                                       .Field(f => f.ApplicantName)
+                                                                       .Query("*" + name + "*")
+                                                                   ), mu => mu
+                                                                   .Match(m => m
+                                                                       .Field(f => f.ApplicantLastname)
+                                                                       .Query("*" + lastName + "*")
+                                                                   )
+                                                               )
+
+                                                           )
+                                                       )
                                                     );
 
             return RepackHighlightsIntoResult(searchResponse);
@@ -159,9 +160,9 @@ namespace Udd.Api.Services
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query)
         {
             List<TermQuery> queries = new List<TermQuery>();
-            
-            TermQuery education = new TermQuery 
-            { 
+
+            TermQuery education = new TermQuery
+            {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantEducationlevel),
                 Value = query.ApplicantEducationLevel
             };
@@ -189,35 +190,35 @@ namespace Udd.Api.Services
             queries.Add(content);
 
             //Combine operators Prva izvorna verzija gde NEST prebacuje u bool query
-            
-            
-             QueryContainer container = education;
-             if (query.Operator1 == Enums.QueryOperator.AND)
-             {
-                 container = container && name;
-             }
-             else
-             {
-                 container = container || name;
-             }
 
-             if (query.Operator2 == Enums.QueryOperator.AND)
-             {
-                 container = container && lastName;
-             }
-             else
-             {
-                 container = container || lastName;
-             }
 
-             if (query.Operator3 == Enums.QueryOperator.AND)
-             {
-                 container = container && content;
-             }
-             else
-             {
-                 container = container || content;
-             }
+            QueryContainer container = education;
+            if (query.Operator1 == Enums.QueryOperator.AND)
+            {
+                container = container && name;
+            }
+            else
+            {
+                container = container || name;
+            }
+
+            if (query.Operator2 == Enums.QueryOperator.AND)
+            {
+                container = container && lastName;
+            }
+            else
+            {
+                container = container || lastName;
+            }
+
+            if (query.Operator3 == Enums.QueryOperator.AND)
+            {
+                container = container && content;
+            }
+            else
+            {
+                container = container || content;
+            }
 
 
             //Druga verzija gde ja tu nesto petljam da bude preciznije/smislenije
@@ -231,9 +232,9 @@ namespace Udd.Api.Services
                 queries.Remove(education);
                 queries.Remove(name);
             }
-            if(query.Operator2 == Enums.QueryOperator.AND)
+            if (query.Operator2 == Enums.QueryOperator.AND)
             {
-                if(!must.Contains(name))
+                if (!must.Contains(name))
                 {
                     must.Add(name);
                     queries.Remove(name);
@@ -246,7 +247,7 @@ namespace Udd.Api.Services
                 if (!must.Contains(lastName))
                 {
                     must.Add(lastName);
-                   
+
                     queries.Remove(lastName);
                 }
                 must.Add(content);
@@ -259,7 +260,7 @@ namespace Udd.Api.Services
                 should.Add(queri);
 
             }
-            
+
             //Kraj druge
 
             BoolQuery q = new BoolQuery
@@ -268,9 +269,9 @@ namespace Udd.Api.Services
                 Should = should
             };
 
-            var searchResponse = await  _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
             {
-                Query = container, //q
+                Query = q, //container
                 Highlight = new Highlight
                 {
                     PreTags = new[] { "<b>" },
@@ -283,7 +284,7 @@ namespace Udd.Api.Services
                             {
                                 Type = HighlighterType.Plain,
                                 ForceSource = true,
-                                
+
                             }
                         }
                     }
@@ -294,7 +295,7 @@ namespace Udd.Api.Services
 
         public async Task IndexTestDocs()
         {
-            foreach(JobApplicationIndexUnit i in MockTestData.GetMockTestData())
+            foreach (JobApplicationIndexUnit i in MockTestData.GetMockTestData())
             {
                 var response = await _elasticClient.CreateDocumentAsync(i);
             }
@@ -339,20 +340,20 @@ namespace Udd.Api.Services
             return stream;
         }
 
-            public async Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase)
+        public async Task<List<SearchResultWithHighlightsDto>> SearchAllFieldsByPhrase(string phrase)
         {
             var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(s => s
                                                        .Query(q => q
-                                                           .MultiMatch( mm => mm
-                                                                .Fields( f => f
-                                                                    .Field(x => x.ApplicantName)
-                                                                    .Field(x => x.ApplicantLastname)
-                                                                    .Field(x => x.CityName)
-                                                                    .Field(x => x.CvContent)
-                                                                    .Field(x => x.CvLetterContent)
-                                                                    )
-                                                                .Query(phrase)
-                                                                .Type(TextQueryType.Phrase)
+                                                           .MultiMatch(mm => mm
+                                                               .Fields(f => f
+                                                                  .Field(x => x.ApplicantName)
+                                                                  .Field(x => x.ApplicantLastname)
+                                                                  .Field(x => x.CityName)
+                                                                  .Field(x => x.CvContent)
+                                                                  .Field(x => x.CvLetterContent)
+                                                                   )
+                                                               .Query(phrase)
+                                                               .Type(TextQueryType.Phrase)
                                                            )
                                                        ).Highlight(h => h
                                                            .Fields(f => f
@@ -396,5 +397,62 @@ namespace Udd.Api.Services
 
         }
 
+        public async Task<CityStats> GetCityStats()
+        {
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
+            {
+                Size = 0, //Da mi ne dobavlja dokumenta nego samo agregacije
+                Aggregations = new AggregationDictionary
+                {
+                    { "most_per_city", new TermsAggregation("cities")
+                        {
+                            Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.CityName),
+                            Order = new List<TermsOrder>
+                            {
+                                TermsOrder.CountDescending
+                            },
+
+                        } 
+                    },
+                }
+
+            });
+
+            var bucketData = searchResponse.Aggregations.Terms("most_per_city").Buckets.First();
+            return new CityStats
+            {
+                CityName = bucketData.Key,
+                DocsNumber = bucketData.DocCount
+            };
+
+
+        }
+
+        public async Task<TimeStats> GetTimeStats()
+        {
+            var searchResponse = await _elasticClient.SearchAsync<JobApplicationIndexUnit>(new SearchRequest<JobApplicationIndexUnit>
+            {
+                Size = 0, //Da mi ne dobavlja dokumenta nego samo agregacije
+                Aggregations = new AggregationDictionary
+                {
+                    { "most_per_time_of_day", new DateHistogramAggregation("times_of_day")
+                        {
+                            Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.DateCreated),
+                            Order = HistogramOrder.CountDescending,
+                            Format = "a", //AM/PM
+                            CalendarInterval =  new Union<DateInterval, Time>(DateInterval.Year),
+                        }
+                    },
+                }
+
+            });
+
+            var bucketData = searchResponse.Aggregations.DateHistogram("most_per_time_of_day").Buckets.First();
+            return new TimeStats
+            {
+                TimeOfDay = bucketData.KeyAsString,
+                DocsNumber = bucketData.DocCount
+            };
+        }
     }
 }

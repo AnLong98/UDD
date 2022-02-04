@@ -16,6 +16,7 @@ namespace Udd.Api.Dto
         public string CvLetterContent { get; set; }
         public string CvFileName { get; set; }
         public string CvLetterFileName { get; set; }
+        public DateTime DateCreated { get; set; }
         
     }
 }

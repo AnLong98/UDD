@@ -4,6 +4,8 @@ import { environment } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { SearchResult } from './../../models/content-search-result.model';
 import { CombinedSearchQuery } from './../../models/combined-search.model';
+import { CityStats } from 'src/app/models/city-stats.model';
+import { TimeStats } from 'src/app/models/time-stats.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +17,18 @@ export class CvService {
   downloadAttachment(documentId: string): Observable<any> {
     let requestUrl = environment.serverURL.concat(`job-documents/${documentId}`);
 		return this.http.get(requestUrl, {responseType: 'blob'});
+  }
+
+  getCityStats():Observable<CityStats>{
+    let requestUrl = environment.serverURL.concat("job-documents/city-stats");
+
+    return this.http.get<CityStats>(requestUrl);
+  }
+
+  getTimeStats():Observable<TimeStats>{
+    let requestUrl = environment.serverURL.concat("job-documents/time-stats");
+
+    return this.http.get<TimeStats>(requestUrl);
   }
 
   getByGeoLocation(city:string, radiusKm:number):Observable<SearchResult[]>

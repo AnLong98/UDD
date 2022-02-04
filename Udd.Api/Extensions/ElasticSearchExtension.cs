@@ -43,13 +43,15 @@ namespace Udd.Api.Extensions
                         .Text(t => t
                             .Name(n => n.ApplicantName)
                                 .Analyzer("serbian"))
+                        .Date( d => d
+                            .Name(n => n.DateCreated))
                         .Text(t => t
                             .Name(n => n.ApplicantLastname)
                                 .Analyzer("serbian"))
                          .Text(t => t
                             .Name(n => n.CvContent)
                                 .Analyzer("serbian"))
-                         .Text(t => t
+                         .Keyword(t => t
                             .Name(n => n.CityName))
                         .Text(t => t
                             .Name(n => n.CvFileName)

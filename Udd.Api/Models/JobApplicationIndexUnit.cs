@@ -17,6 +17,7 @@ namespace Udd.Api.Models
         public string CvLetterContent { get; set; }
         public string CvFileName { get; set; }
         public string CvLetterFileName { get; set; }
+        public DateTime DateCreated { get; set; }
         public GeoLocation GeoLocation { get; set; }
     }
 }

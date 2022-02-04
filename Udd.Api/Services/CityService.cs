@@ -24,7 +24,7 @@ namespace Udd.Api.Services
 
         public List<CityDto> GetAll()
         {
-            return _mapper.Map<List<CityDto>>(_dbContext.Cities.ToList());
+            return _mapper.Map<List<CityDto>>(_dbContext.Cities.OrderBy(x => x.Name).ToList());
         }
 
         public CityDto GetByName(string name)

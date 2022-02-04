@@ -36,10 +36,11 @@
 
                             <div class="row mt-2">
                                 <div class="col-md-6">
-                                    <mat-form-field class="example-full-width">
+                                    <mat-form-field appearance="legacy" class="example-full-width">
                                         <mat-label>City</mat-label>
-                                        <input matInput  formControlName="city">
-                                        
+                                        <mat-select formControlName="city">
+                                                <mat-option *ngFor="let city of cities" [value]="city.name" >{{city.name}}</mat-option>
+                                        </mat-select>
                                     </mat-form-field>
                                 </div>
 

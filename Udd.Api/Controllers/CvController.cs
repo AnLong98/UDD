@@ -30,6 +30,20 @@ namespace Udd.Api.Controllers
             return Ok();
         }
 
+        [HttpGet("city-stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            return Ok(await _cvService.GetCityStats());
+
+        }
+
+        [HttpGet("time-stats")]
+        public async Task<IActionResult> GetTimeStats()
+        {
+            return Ok(await _cvService.GetTimeStats());
+
+        }
+
 
         [HttpGet("personal-info")]
         public async Task<IActionResult> SearchByName([FromQuery][Required] string name, [FromQuery][Required] string lastName)

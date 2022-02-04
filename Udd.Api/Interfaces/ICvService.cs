@@ -22,6 +22,8 @@ namespace Udd.Api.Interfaces
         Task<bool> AddNewApplication(NewJobApplicationDto application);
         string ParseTextFromPdfFormFile(IFormFile file);
         FileStream GetJobApplicationDocsZip(Guid docID);
+        Task<CityStats> GetCityStats();
+        Task<TimeStats> GetTimeStats();
         Task IndexTestDocs();
     }
 }

@@ -1,8 +1,10 @@
 import { Component,  Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { City } from '../models/city.model';
 import { CvService } from './../services/cv/cv.service';
 import { ValidationService } from './../services/cv/validation.service';
+import { CityService } from './../services/cv/city.service';
 
 @Component({
   selector: 'app-add-application',
@@ -32,13 +34,28 @@ export class AddApplicationComponent implements OnInit {
     cvFileSource: new FormControl('', Validators.required),
     letterSource: new FormControl('', Validators.required),
   })
-
+  cities: City[] = [];
   isLoading:boolean = false;
 
-  constructor(private router:Router, private cvService:CvService, private validation:ValidationService) { }
+  constructor(private router:Router, private cvService:CvService, private validation:ValidationService, private cityService:CityService) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
+    this.loadCities();
 
+  }
+
+  loadCities(){
+    this.cityService.getCities()
+    .subscribe(
+      data =>{
+        this.cities = data
+        this.isLoading = false;
+      },
+      error =>{
+        this.isLoading = false;
+      }
+    )
   }
 
   get f(){
