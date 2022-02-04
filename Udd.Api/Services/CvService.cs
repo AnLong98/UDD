@@ -159,33 +159,33 @@ namespace Udd.Api.Services
 
         public async Task<List<SearchResultWithHighlightsDto>> GetCvsCombinedQuery(CombinedQueryDto query)
         {
-            List<TermQuery> queries = new List<TermQuery>();
+            List<MatchQuery> queries = new List<MatchQuery>();
 
-            TermQuery education = new TermQuery
+            MatchQuery education = new MatchQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantEducationlevel),
-                Value = query.ApplicantEducationLevel
+                Query = query.ApplicantEducationLevel.ToString()
             };
             queries.Add(education);
 
-            TermQuery name = new TermQuery
+            MatchQuery name = new MatchQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantName),
-                Value = query.ApplicantName
+                Query = query.ApplicantName
             };
             queries.Add(name);
 
-            TermQuery lastName = new TermQuery
+            MatchQuery lastName = new MatchQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.ApplicantLastname),
-                Value = query.ApplicantLastName
+                Query = query.ApplicantLastName
             };
             queries.Add(lastName);
 
-            TermQuery content = new TermQuery
+            MatchQuery content = new MatchQuery
             {
                 Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.CvContent),
-                Value = query.CvContent
+                Query = query.CvContent
             };
             queries.Add(content);
 
@@ -435,19 +435,18 @@ namespace Udd.Api.Services
                 Size = 0, //Da mi ne dobavlja dokumenta nego samo agregacije
                 Aggregations = new AggregationDictionary
                 {
-                    { "most_per_time_of_day", new DateHistogramAggregation("times_of_day")
+                    { "most_per_time_of_day", new AutoDateHistogramAggregation("times_of_day")
                         {
                             Field = Nest.Infer.Field<JobApplicationIndexUnit>(p => p.DateCreated),
-                            Order = HistogramOrder.CountDescending,
                             Format = "a", //AM/PM
-                            CalendarInterval =  new Union<DateInterval, Time>(DateInterval.Year),
+                            Buckets = 2 
                         }
                     },
                 }
 
             });
 
-            var bucketData = searchResponse.Aggregations.DateHistogram("most_per_time_of_day").Buckets.First();
+            var bucketData = searchResponse.Aggregations.AutoDateHistogram("most_per_time_of_day").Buckets.First();
             return new TimeStats
             {
                 TimeOfDay = bucketData.KeyAsString,
